@@ -1,57 +1,85 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
+import {
+  useQuery
+} from '@tanstack/react-query';
+
+// custom components
+import RecipeCard from '@/components/RecipeCard';
+
+import { ActivityIndicator, FlatList, Pressable, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+// api functions
+import RecipeList from '@/components/recipe/RecipeList';
+import { type Recipe, fetchRecipes } from '@/utils/api/recipes';
+import { type Tag, fetchTags } from '@/utils/api/tags';
+import { navigate } from 'expo-router/build/global-state/routing';
+
 export default function HomeScreen() {
+  // const { data: recipes, isPending: recipeIsPending, error: queryRecipeError } = useQuery(createRecipeQueryOptions());
+  const { data: recipes, isPending: recipeIsPending, error: queryRecipeError } = useQuery({ queryKey: ['recipes'], queryFn: fetchRecipes });
+  const { data: tags, isPending: tagIsPendintg, error: queryTagError } = useQuery({ queryKey: ['tags'], queryFn: fetchTags });
+
+  const renderRecipeItem = ({ item }: { item: Recipe }) => (
+    <RecipeCard id={item.id} image={item.image} name={item.name} cookTimeMinutes={item.cookTimeMinutes} />
+  );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.recipesContainer}>
+      <ScrollView
+        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.titleContainer}>
+          <ThemedText type="title">Kitchen Nadal</ThemedText>
+        </View>
+
+        <View style={{ marginTop: 16, marginBottom: 16 }}>
+          <ThemedText type="subtitle" style={{ marginLeft: 0, marginBottom: 8 }}>Popular Tags</ThemedText>
+          {tagIsPendintg ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" />
+            </View>
+          ) : queryTagError ? (
+            <View style={styles.errorContainer}>
+              <ThemedText type="defaultSemiBold" style={styles.errorText}>{queryTagError}</ThemedText>
+            </View>
+          ) : (
+            <FlatList
+              data={tags.data}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 5 }}
+              renderItem={({ item }: { item: Tag }) => (
+                <Pressable onPress={() => navigate('recipes/' + item)}>
+                  <ThemedView style={{ marginRight: 8, paddingVertical: 4, paddingHorizontal: 12, backgroundColor: '#000000', borderRadius: 20 }}>
+                    <ThemedText type="defaultSemiBold" style={{ color: '#ffffff' }}>{item}</ThemedText>
+                  </ThemedView>
+                </Pressable>
+              )}
+              keyExtractor={(item, index) => index.toString()}
+            />
+          )}
+        </View>
+
+        <View>
+          <ThemedText type="subtitle" style={{ marginLeft: 0, marginBottom: 8 }}>Popular Recipes</ThemedText>
+          {recipeIsPending ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" />
+            </View>
+          ) : queryRecipeError ? (
+            <View style={styles.errorContainer}>
+              <ThemedText type="defaultSemiBold" style={styles.errorText}>{queryRecipeError}</ThemedText>
+            </View>
+          ) : (
+            <RecipeList data={recipes.data.recipes} />
+          )}
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -61,15 +89,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  errorContainer: {
+    padding: 20,
+    backgroundColor: '#ffebee',
+    borderRadius: 8,
+    margin: 16,
   },
+  errorText: {
+    color: '#c62828',
+  },
+  recipesContainer: {
+    flex: 1,
+    padding: 0
+  },
+  flatListContent: {
+    //paddingHorizontal: 8,
+  },
+  row: {
+    justifyContent: 'space-between',
+  }
 });
