@@ -1,42 +1,30 @@
-
-import {
-  useQuery
-} from '@tanstack/react-query';
-
-// custom components
-import RecipeCard from '@/components/RecipeCard';
-
 import { ActivityIndicator, FlatList, Pressable, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+
 // api functions
 import RecipeList from '@/components/recipe/RecipeList';
-import { type Recipe, fetchRecipes } from '@/utils/api/recipes';
-import { type Tag, fetchTags } from '@/utils/api/tags';
+import { type Tag } from '@/utils/api/tags';
 import { navigate } from 'expo-router/build/global-state/routing';
+
+// react query
+import { useRecipeQuery } from '@/hooks/query/useRecipeQuery';
+import { useTagQuery } from '@/hooks/query/useTagQuery';
 
 export default function HomeScreen() {
   // const { data: recipes, isPending: recipeIsPending, error: queryRecipeError } = useQuery(createRecipeQueryOptions());
-  const { data: recipes, isPending: recipeIsPending, error: queryRecipeError } = useQuery({ queryKey: ['recipes'], queryFn: fetchRecipes });
-  const { data: tags, isPending: tagIsPendintg, error: queryTagError } = useQuery({ queryKey: ['tags'], queryFn: fetchTags });
-
-  const renderRecipeItem = ({ item }: { item: Recipe }) => (
-    <RecipeCard id={item.id} image={item.image} name={item.name} cookTimeMinutes={item.cookTimeMinutes} />
-  );
+  const { data: recipes, isPending: recipeIsPending, error: queryRecipeError } = useRecipeQuery();
+  const { data: tags, isPending: tagIsPendintg, error: queryTagError } = useTagQuery();
 
   return (
     <SafeAreaView style={styles.recipesContainer}>
       <ScrollView
-        contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
+        contentContainerStyle={{ padding: 16, paddingBottom: 20 }}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.titleContainer}>
-          <ThemedText type="title">Kitchen Nadal</ThemedText>
-        </View>
-
-        <View style={{ marginTop: 16, marginBottom: 16 }}>
+        <View style={{ marginTop: 0, marginBottom: 16 }}>
           <ThemedText type="subtitle" style={{ marginLeft: 0, marginBottom: 8 }}>Popular Tags</ThemedText>
           {tagIsPendintg ? (
             <View style={styles.loadingContainer}>
@@ -44,7 +32,7 @@ export default function HomeScreen() {
             </View>
           ) : queryTagError ? (
             <View style={styles.errorContainer}>
-              <ThemedText type="defaultSemiBold" style={styles.errorText}>{queryTagError}</ThemedText>
+              <ThemedText type="defaultSemiBold" style={styles.errorText}>{JSON.stringify(queryTagError)}</ThemedText>
             </View>
           ) : (
             <FlatList
@@ -53,7 +41,7 @@ export default function HomeScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 0, paddingVertical: 5 }}
               renderItem={({ item }: { item: Tag }) => (
-                <Pressable onPress={() => navigate('recipes/' + item)}>
+                <Pressable onPress={() => navigate(`recipes/${item}`)}>
                   <ThemedView style={{ marginRight: 8, paddingVertical: 4, paddingHorizontal: 12, backgroundColor: '#000000', borderRadius: 20 }}>
                     <ThemedText type="defaultSemiBold" style={{ color: '#ffffff' }}>{item}</ThemedText>
                   </ThemedView>
@@ -75,7 +63,7 @@ export default function HomeScreen() {
               <ThemedText type="defaultSemiBold" style={styles.errorText}>{queryRecipeError}</ThemedText>
             </View>
           ) : (
-            <RecipeList data={recipes.data.recipes} />
+            <RecipeList data={recipes.data} />
           )}
         </View>
       </ScrollView>
@@ -84,11 +72,6 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

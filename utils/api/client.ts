@@ -6,7 +6,6 @@ export interface ApiResponse<T> {
     error?: string;
 }
 
-
 // Create axios instance with default configuration
 export const api = axios.create({
     baseURL: env.API_ENDPOINT,

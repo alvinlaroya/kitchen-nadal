@@ -23,10 +23,7 @@ export interface Recipes {
     recipes: Recipe[];
 }
 
-export type Tags = string[];
-
 export const fetchRecipes = async (): Promise<ApiResponse<Recipes>> => {
-    console.log("FETCH RECIPES CALLED");
     try {
         const response = await api.get<Recipes>('');
         return { data: response.data };
@@ -57,18 +54,6 @@ export const fetchRecipeByTag = async (tag: string): Promise<ApiResponse<Recipes
     } catch (error) {
         return {
             data: { limit: 0, recipes: [] },
-            error: handleAxiosError(error)
-        };
-    }
-};
-
-export const fetchTags = async (): Promise<ApiResponse<Tags>> => {
-    try {
-        const response = await api.get<Tags>('');
-        return { data: response.data };
-    } catch (error) {
-        return {
-            data: [],
             error: handleAxiosError(error)
         };
     }

@@ -1,47 +1,37 @@
-import {
-    useQuery
-} from '@tanstack/react-query';
+import { ThemedText } from '@/components/ThemedText';
 import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
-import { ThemedText } from '@/components/ThemedText';
 
+// react query hooks
 import RecipeList from '@/components/recipe/RecipeList';
-
-// api functions
-import { fetchRecipeByTag } from '@/utils/api/recipes';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRecipeByTagQuery } from '@/hooks/query/useRecipeByTagQuery';
 
 export default function Recipes() {
     const { tag } = useLocalSearchParams();
 
-    const { data: recipes, isPending, error } = useQuery({
-        queryKey: ['recipesByTag', tag],
-        queryFn: () => fetchRecipeByTag(tag as string),
-        enabled: !!tag, // Only run the query if id is defined
-    });
+    const { data: recipes, isPending, error } = useRecipeByTagQuery(tag as string);
 
     return (
-        <SafeAreaView style={styles.recipesContainer}>
-            <ScrollView
-                contentContainerStyle={{}}
-                showsVerticalScrollIndicator={false}
-            >
-                <View>
-                    {isPending ? (
-                        <View style={styles.loadingContainer}>
-                            <ActivityIndicator size="large" />
-                        </View>
-                    ) : error ? (
-                        <View style={styles.errorContainer}>
-                            <ThemedText type="defaultSemiBold" style={styles.errorText}>{error}</ThemedText>
-                        </View>
-                    ) : (
-                        <RecipeList data={recipes.data.recipes} />
-                    )}
-                </View>
-            </ScrollView>
-        </SafeAreaView>
+        <ScrollView
+            contentContainerStyle={{}}
+            showsVerticalScrollIndicator={false}
+            style={styles.recipesContainer}
+        >
+            <View>
+                {isPending ? (
+                    <View style={styles.loadingContainer}>
+                        <ActivityIndicator size="large" />
+                    </View>
+                ) : error ? (
+                    <View style={styles.errorContainer}>
+                        <ThemedText type="defaultSemiBold" style={styles.errorText}>{error}</ThemedText>
+                    </View>
+                ) : (
+                    <RecipeList data={recipes.data} />
+                )}
+            </View>
+        </ScrollView>
     );
 }
 
@@ -68,6 +58,7 @@ const styles = StyleSheet.create({
     },
     recipesContainer: {
         flex: 1,
+        paddingVertical: 8,
         paddingHorizontal: 16,
     },
     flatListContent: {

@@ -9,7 +9,8 @@ import { FlatList, StyleSheet, View } from 'react-native';
 
 
 // api functions
-import { type Recipes, Recipe } from '@/utils/api/recipes';
+import { Recipe } from '@/utils/api/recipes';
+import { Recipes } from '@/utils/query_options/createRecipeQueryOptions';
 
 export default function RecipeList({ data }: { data: Recipes }) {
     const renderRecipeItem = ({ item }: { item: Recipe }) => (
@@ -19,7 +20,7 @@ export default function RecipeList({ data }: { data: Recipes }) {
     return (
         <View style={styles.recipesContainer}>
             <FlatList
-                data={data}
+                data={data.recipes}
                 renderItem={renderRecipeItem}
                 keyExtractor={(item) => item.id.toString()}
                 numColumns={2}
