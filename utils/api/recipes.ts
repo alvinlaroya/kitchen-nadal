@@ -25,7 +25,7 @@ export interface Recipes {
 
 export const fetchRecipes = async (): Promise<ApiResponse<Recipes>> => {
     try {
-        const response = await api.get<Recipes>('');
+        const response = await api.get<Recipes>('?limit=8');
         return { data: response.data };
     } catch (error) {
         return {
