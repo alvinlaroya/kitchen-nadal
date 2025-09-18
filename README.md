@@ -1,7 +1,7 @@
 ## Screenshots
 
 ### Grid View
-![Product Gallery - Table View](public/projects/kitchen-nadal.webp)
+![Product Gallery - Table View](assets/images/kitchen-nadal-cs.webp)
 
 
 ## Get started
