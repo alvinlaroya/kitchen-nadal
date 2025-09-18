@@ -1,7 +1,7 @@
 ## Screenshots
 
 ### Grid View
-![Product Gallery - Table View](assets/images/kitchen-nadal-cs.webp)
+![Kitchen Nadal Mobile App](app/assets/images/kitchen-nadal-cs.webp)
 
 
 ## Get started
